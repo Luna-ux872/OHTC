@@ -14,13 +14,13 @@ var points = new Dictionary<string, Point>(StringComparer.OrdinalIgnoreCase)
 
 var segments = new Dictionary<string, Segment>(StringComparer.OrdinalIgnoreCase)
 {
-    ["S1"] = new("S1", "P1", "P2", 10, true, SegmentTrafficLevel.Normal, 2.0),
-    ["S2"] = new("S2", "P2", "P3", 10, true, SegmentTrafficLevel.Busy, 2.0),
-    ["S3"] = new("S3", "P3", "P4", 10, true, SegmentTrafficLevel.Unavailable, 2.0),
-    ["S4"] = new("S4", "P4", "P5", 10, true, SegmentTrafficLevel.Normal, 2.0),
-    ["S5"] = new("S5", "P5", "P6", 10, true, SegmentTrafficLevel.Normal, 2.0),
-    ["S6"] = new("S6", "P6", "P1", 10, true, SegmentTrafficLevel.Normal, 2.0),
-    ["S7"] = new("S7", "P2", "P5", 10, true, SegmentTrafficLevel.Normal, 2.0)
+    ["S1"] = new("S1", "P1", "P2", 10, true),
+    ["S2"] = new("S2", "P2", "P3", 10, true),
+    ["S3"] = new("S3", "P3", "P4", 10, true),
+    ["S4"] = new("S4", "P4", "P5", 10, true),
+    ["S5"] = new("S5", "P5", "P6", 10, true),
+    ["S6"] = new("S6", "P6", "P1", 10, true),
+    ["S7"] = new("S7", "P2", "P5", 10, true)
 };
 
 var graph = new GraphEngine(points, segments);

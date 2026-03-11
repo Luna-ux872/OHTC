@@ -9,7 +9,7 @@
 
 ### 1.2 核心职责
 1. **GraphEngine**：将 `dicPoints` + `dicSegments` 转换成邻接表图，供高频路径查询。
-2. **PathPlanner**：基于 A*（启发式欧氏距离）计算最短“预计时间”路径，支持轨道等级动态成本。
+2. **PathPlanner**：基于 A*（启发式欧氏距离）计算最短路径。
 3. **SnapshotManager**：从 Redis Key `OHT:{OhtCode}` 拉取状态并写入本地 `ConcurrentDictionary` 缓存。
 4. **VehicleAllocator**：按“空闲 + 最近 + 无冲突”规则选择 OHT。
 5. **TaskSchedulerService**：按任务优先级调度，保证多实例并发安全。
@@ -17,13 +17,11 @@
 
 ## 2. 关键算法说明
 
-### 2.1 路径规划（动态预计时间成本）
+### 2.1 路径规划
 - 使用 `PriorityQueue<string,double>` 实现 A*。
-- 轨道等级：`Normal`（通常）、`Busy`（繁忙）、`Unavailable`（不可用）。
-- `g(n)`：起点到当前点的累计预计行驶时间。
-- 单段时间：`SegmentTime = Length / Speed`，繁忙段乘惩罚系数（如 `1.6x`），不可用段视为 `+∞` 跳过。
-- `h(n)`：欧氏距离 / 默认速度，作为“剩余预计时间”启发式。
-- `f(n)=g(n)+h(n)`，最小化总运输预计时间而不仅是几何距离。
+- `g(n)`：起点到当前点的实际代价。
+- `h(n)`：当前点到目标点欧氏距离。
+- `f(n)=g(n)+h(n)`。
 
 ### 2.2 车辆分配
 - 过滤条件：`OhtStatus.Idle`。

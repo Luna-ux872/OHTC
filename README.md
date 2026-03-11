@@ -1,8 +1,8 @@
 # OHTC Scheduler (.NET 8)
 
 工业级 OHT 调度系统示例，实现了：
-- Path Planning（A* + 动态预计时间成本）
-- Vehicle Allocation（最近预计到达时间 + Idle + 无冲突）
+- Path Planning（A*）
+- Vehicle Allocation（最近 + Idle + 无冲突）
 - Task Scheduling（优先级 + 多实例并发）
 - Deadlock Avoidance（路径预占）
 - Redis 状态同步（示例使用内存 Redis 适配器）

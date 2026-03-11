@@ -5,7 +5,7 @@ namespace OHTC.Core;
 public sealed class GraphEngine
 {
     private readonly Dictionary<string, Point> _points;
-    private readonly Dictionary<string, List<SegmentEdge>> _adjacency;
+    private readonly Dictionary<string, List<(string To, double Cost, string SegmentId)>> _adjacency;
 
     public GraphEngine(IReadOnlyDictionary<string, Point> points, IReadOnlyDictionary<string, Segment> segments)
     {
@@ -24,43 +24,28 @@ public sealed class GraphEngine
                 continue;
             }
 
-            _adjacency[segment.FromPoint].Add(new SegmentEdge(segment.Id, segment.ToPoint, segment.Length, segment.TrafficLevel, segment.SpeedMetersPerSecond));
+            _adjacency[segment.FromPoint].Add((segment.ToPoint, segment.Length, segment.Id));
 
             if (!segment.IsOneWay)
             {
-                _adjacency[segment.ToPoint].Add(new SegmentEdge(segment.Id, segment.FromPoint, segment.Length, segment.TrafficLevel, segment.SpeedMetersPerSecond));
+                _adjacency[segment.ToPoint].Add((segment.FromPoint, segment.Length, segment.Id));
             }
         }
     }
 
-    public IEnumerable<SegmentEdge> GetNeighbors(string pointId)
-        => _adjacency.TryGetValue(pointId, out var neighbors) ? neighbors : Enumerable.Empty<SegmentEdge>();
+    public IEnumerable<(string To, double Cost, string SegmentId)> GetNeighbors(string pointId)
+        => _adjacency.TryGetValue(pointId, out var neighbors) ? neighbors : Enumerable.Empty<(string, double, string)>();
 
     public bool ContainsPoint(string pointId) => _points.ContainsKey(pointId);
 
     public Point GetPoint(string pointId) => _points[pointId];
 
-    public double Heuristic(string fromPointId, string toPointId, DynamicCostContext context)
+    public double Heuristic(string fromPointId, string toPointId)
     {
         var a = _points[fromPointId];
         var b = _points[toPointId];
         var dx = a.X - b.X;
         var dy = a.Y - b.Y;
-        var distance = Math.Sqrt(dx * dx + dy * dy);
-        return distance / Math.Max(0.1, context.DefaultSpeedMetersPerSecond);
+        return Math.Sqrt(dx * dx + dy * dy);
     }
-}
-
-public sealed record SegmentEdge(
-    string SegmentId,
-    string To,
-    double Length,
-    SegmentTrafficLevel TrafficLevel,
-    double SpeedMetersPerSecond);
-
-public sealed record DynamicCostContext(
-    double BusyPenaltyFactor,
-    double DefaultSpeedMetersPerSecond)
-{
-    public static DynamicCostContext Default { get; } = new(BusyPenaltyFactor: 1.6, DefaultSpeedMetersPerSecond: 1.0);
 }

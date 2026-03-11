@@ -7,16 +7,7 @@ public sealed record Segment(
     string FromPoint,
     string ToPoint,
     double Length,
-    bool IsOneWay,
-    SegmentTrafficLevel TrafficLevel = SegmentTrafficLevel.Normal,
-    double SpeedMetersPerSecond = 1.0);
-
-public enum SegmentTrafficLevel
-{
-    Normal,
-    Busy,
-    Unavailable
-}
+    bool IsOneWay);
 
 public enum OhtCommandCode
 {

@@ -11,14 +11,12 @@ public sealed class PathPlanner
         _graph = graph;
     }
 
-    public PathResult FindShortestPath(string startPoint, string endPoint, DynamicCostContext? costContext = null)
+    public PathResult FindShortestPath(string startPoint, string endPoint)
     {
         if (!_graph.ContainsPoint(startPoint) || !_graph.ContainsPoint(endPoint))
         {
             return PathResult.Empty;
         }
-
-        var context = costContext ?? DynamicCostContext.Default;
 
         var frontier = new PriorityQueue<string, double>();
         var cameFrom = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
@@ -35,43 +33,20 @@ public sealed class PathPlanner
                 return BuildPathResult(endPoint, cameFrom, gScore[endPoint]);
             }
 
-            foreach (var edge in _graph.GetNeighbors(current))
+            foreach (var (to, cost, _) in _graph.GetNeighbors(current))
             {
-                var segmentCost = EstimateSegmentTravelTime(edge, context);
-                if (double.IsInfinity(segmentCost))
+                var candidate = gScore[current] + cost;
+                if (!gScore.TryGetValue(to, out var existing) || candidate < existing)
                 {
-                    continue;
-                }
-
-                var candidate = gScore[current] + segmentCost;
-                if (!gScore.TryGetValue(edge.To, out var existing) || candidate < existing)
-                {
-                    gScore[edge.To] = candidate;
-                    cameFrom[edge.To] = current;
-                    var priority = candidate + _graph.Heuristic(edge.To, endPoint, context);
-                    frontier.Enqueue(edge.To, priority);
+                    gScore[to] = candidate;
+                    cameFrom[to] = current;
+                    var priority = candidate + _graph.Heuristic(to, endPoint);
+                    frontier.Enqueue(to, priority);
                 }
             }
         }
 
         return PathResult.Empty;
-    }
-
-    private static double EstimateSegmentTravelTime(SegmentEdge edge, DynamicCostContext context)
-    {
-        if (edge.TrafficLevel == SegmentTrafficLevel.Unavailable)
-        {
-            return double.PositiveInfinity;
-        }
-
-        var speed = Math.Max(0.1, edge.SpeedMetersPerSecond);
-        var baseTime = edge.Length / speed;
-
-        return edge.TrafficLevel switch
-        {
-            SegmentTrafficLevel.Busy => baseTime * context.BusyPenaltyFactor,
-            _ => baseTime
-        };
     }
 
     private static PathResult BuildPathResult(
